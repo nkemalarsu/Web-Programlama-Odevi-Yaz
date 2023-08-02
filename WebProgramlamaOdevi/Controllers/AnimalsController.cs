@@ -11,7 +11,7 @@ using WebProgramlamaOdevi.Models;
 
 namespace WebProgramlamaOdevi.Controllers
 {
-    [Authorize]
+   
     public class AnimalsController : Controller
     {
         private readonly ApplicationDbContext _context;
