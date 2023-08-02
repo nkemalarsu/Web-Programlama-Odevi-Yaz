@@ -24,8 +24,9 @@ namespace WebProgramlamaOdevi.Controllers
         // GET: Animals
         public async Task<IActionResult> Index()
         {
+            //Sadece kabul edilen ve sahiplendirilmemiş hayvanları görüntüler.
             return _context.Animal != null ?
-                        View(await _context.Animal.ToListAsync()) :
+                        View(await _context.Animal.Where(p=>p.isAdopted==false&&p.isConfirmed==true).ToListAsync()) :
                         Problem("Entity set 'ApplicationDbContext.Animal'  is null.");
         }
 

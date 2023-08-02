@@ -25,6 +25,19 @@ namespace WebProgramlamaOdevi.Data
                 a.Property(p => p.isConfirmed).HasColumnName("IsConfirmed");
                 a.HasOne(p => p.AnimalType);
             });
+            modelBuilder.Entity<AnimalAdopted>(a =>
+            {
+                a.ToTable("AnimalAdopteds").HasKey(p => p.Id);
+                a.Property(p => p.Id).HasColumnName("Id");
+                a.Property(p => p.isConfirmed).HasColumnName("IsConfirmed");
+                a.Property(p => p.ConfirmedDateTime).HasColumnName("ConfirmedDateTime");
+                a.Property(p => p.AnimalId).HasColumnName("AnimalId");
+                a.Property(p => p.CreatedDateTime).HasColumnName("CreatedDateTime");
+                a.Property(p => p.isConfirmed).HasColumnName("IsConfirmed");
+                a.Property(p => p.UserId).HasColumnName("UserId");
+                a.HasOne(p => p.Animal);
+                a.HasOne(p => p.IdentityUser);
+            });
             modelBuilder.Entity<AnimalType>(a =>
             {
                 a.ToTable("AnimalTypes").HasKey(p => p.Id);
@@ -36,5 +49,6 @@ namespace WebProgramlamaOdevi.Data
         }
         public DbSet<Animal> Animal { get; set; } = default!;
         public DbSet<AnimalType> AnimalType { get; set; } = default!;
+        public DbSet<AnimalAdopted> AnimalAdopted { get; set; } = default!;
     }
 }
