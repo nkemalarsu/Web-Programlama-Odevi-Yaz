@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using System.Globalization;
 using WebProgramlamaOdevi.Data;
 
@@ -104,7 +105,11 @@ else
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
+var cultures = new List<CultureInfo> {
+    new CultureInfo("en"),
+    new CultureInfo("tr")
+};
+app.UseRequestLocalization(app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value);
 app.UseRouting();
 
 app.UseSession();
