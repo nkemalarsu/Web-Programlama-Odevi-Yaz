@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
@@ -8,18 +9,18 @@ using WebProgramlamaOdevi.Models;
 
 namespace WebProgramlamaOdevi.Controllers
 {
+    [AllowAnonymous]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
         private readonly UserManager<IdentityUser> _userManager;
-        string _userId=string.Empty;
         private readonly ApplicationDbContext _context;
-        public HomeController(ILogger<HomeController> logger, UserManager<IdentityUser> userManager, ApplicationDbContext _context,IHttpContextAccessor httpContext)
+        public HomeController(ILogger<HomeController> logger, UserManager<IdentityUser> userManager, ApplicationDbContext _context)
         {
             _logger = logger;
             _userManager = userManager;
             this._context = _context;
-            _userId = httpContext.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+          
         }
 
         public async Task<IActionResult> Index()
