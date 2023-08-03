@@ -15,13 +15,12 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="UserId" class="control-label"></label>
-                <input asp-for="UserId" class="form-control" />
-                <span asp-validation-for="UserId" class="text-danger"></span>
+                <select asp-for="UserId" class="form-control" asp-items="ViewBag.UserId"></select>
+               
             </div>
             <div class="form-group">
                 <label asp-for="AnimalId" class="control-label"></label>
-                <input asp-for="AnimalId" class="form-control" />
-                <span asp-validation-for="AnimalId" class="text-danger"></span>
+                <select asp-for="AnimalId" class ="form-control" asp-items="ViewBag.AnimalId"></select>
             </div>
             <div class="form-group">
                 <label asp-for="CreatedDateTime" class="control-label"></label>
@@ -38,6 +37,7 @@
                 <input asp-for="ConfirmedDateTime" class="form-control" />
                 <span asp-validation-for="ConfirmedDateTime" class="text-danger"></span>
             </div>
+           
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>

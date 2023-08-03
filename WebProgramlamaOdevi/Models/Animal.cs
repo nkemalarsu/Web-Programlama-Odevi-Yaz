@@ -4,8 +4,7 @@ namespace WebProgramlamaOdevi.Models
 {
     public class Animal:BaseEntity
     {
-        public Guid AnimalAcceptedId { get; set; } = Guid.Empty;
-        public Guid AnimalTypeId { get; set; }
+        public string? AnimalTypeId { get; set; }
         public string? Name { get; set; }
         public string? Description { get; set; }
         public int Age { get; set; }
@@ -16,7 +15,7 @@ namespace WebProgramlamaOdevi.Models
         {
 
         }
-        public Animal(Guid animalTypeId, string? name, string? description, int age)
+        public Animal(string animalTypeId, string? name, string? description, int age)
         {
             AnimalTypeId = animalTypeId;
             Name = name;

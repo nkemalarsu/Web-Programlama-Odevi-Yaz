@@ -17,9 +17,6 @@
                 @Html.DisplayNameFor(model => model.UserId)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.AnimalId)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.CreatedDateTime)
             </th>
             <th>
@@ -27,6 +24,9 @@
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.ConfirmedDateTime)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Animal)
             </th>
             <th></th>
         </tr>
@@ -38,9 +38,6 @@
                 @Html.DisplayFor(modelItem => item.UserId)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.AnimalId)
-            </td>
-            <td>
                 @Html.DisplayFor(modelItem => item.CreatedDateTime)
             </td>
             <td>
@@ -48,6 +45,9 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.ConfirmedDateTime)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Animal.Id)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

@@ -52,7 +52,7 @@ builder.Services.AddLocalization(options =>
 //Culture Settings
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
-    options.DefaultRequestCulture = new("tr");
+    options.DefaultRequestCulture = new("en");
 
     CultureInfo[] cultures = new CultureInfo[]
     {

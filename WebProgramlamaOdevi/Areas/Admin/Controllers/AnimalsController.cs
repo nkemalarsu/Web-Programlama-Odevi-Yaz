@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,7 @@ using WebProgramlamaOdevi.Models;
 namespace WebProgramlamaOdevi.Areas.Admin.Controllers
 {
     [Area("Admin")]
+  [Authorize(Roles ="Admin")]
     public class AnimalsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -28,7 +30,7 @@ namespace WebProgramlamaOdevi.Areas.Admin.Controllers
         }
 
         // GET: Admin/Animals/Details/5
-        public async Task<IActionResult> Details(Guid? id)
+        public async Task<IActionResult> Details(string id)
         {
             if (id == null || _context.Animal == null)
             {
@@ -58,21 +60,31 @@ namespace WebProgramlamaOdevi.Areas.Admin.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("AnimalAcceptedId,AnimalTypeId,Name,Description,Age,isAdopted,isConfirmed,Id")] Animal animal)
+        public async Task<IActionResult> Create([Bind("AnimalTypeId,Name,Description,Age,isAdopted,isConfirmed")] Animal animal)
         {
-            if (ModelState.IsValid)
+            try
             {
-                animal.Id = Guid.NewGuid();
+                animal.Id=Guid.NewGuid().ToString();
                 _context.Add(animal);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["AnimalTypeId"] = new SelectList(_context.AnimalType, "Id", "Id", animal.AnimalTypeId);
-            return View(animal);
+            catch (Exception ex)
+            {
+
+                return View(ex.Message);
+            }
+            finally
+            {
+                ViewData["AnimalTypeId"] = new SelectList(_context.AnimalType, "Id", "Id", animal.AnimalTypeId);
+            }    
+            
+           
+           
         }
 
         // GET: Admin/Animals/Edit/5
-        public async Task<IActionResult> Edit(Guid? id)
+        public async Task<IActionResult> Edit(string id)
         {
             if (id == null || _context.Animal == null)
             {
@@ -93,7 +105,7 @@ namespace WebProgramlamaOdevi.Areas.Admin.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("AnimalAcceptedId,AnimalTypeId,Name,Description,Age,isAdopted,isConfirmed,Id")] Animal animal)
+        public async Task<IActionResult> Edit(string id, [Bind("AnimalTypeId,Name,Description,Age,isAdopted,isConfirmed,Id")] Animal animal)
         {
             if (id != animal.Id)
             {
@@ -125,7 +137,7 @@ namespace WebProgramlamaOdevi.Areas.Admin.Controllers
         }
 
         // GET: Admin/Animals/Delete/5
-        public async Task<IActionResult> Delete(Guid? id)
+        public async Task<IActionResult> Delete(string id)
         {
             if (id == null || _context.Animal == null)
             {
@@ -146,7 +158,7 @@ namespace WebProgramlamaOdevi.Areas.Admin.Controllers
         // POST: Admin/Animals/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
+        public async Task<IActionResult> DeleteConfirmed(string id)
         {
             if (_context.Animal == null)
             {
@@ -162,7 +174,7 @@ namespace WebProgramlamaOdevi.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool AnimalExists(Guid id)
+        private bool AnimalExists(string id)
         {
           return (_context.Animal?.Any(e => e.Id == id)).GetValueOrDefault();
         }

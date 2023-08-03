@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,7 @@ using WebProgramlamaOdevi.Models;
 namespace WebProgramlamaOdevi.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles ="Admin")]
     public class AnimalTypesController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -29,7 +31,7 @@ namespace WebProgramlamaOdevi.Areas.Admin.Controllers
         }
 
         // GET: Admin/AnimalTypes/Details/5
-        public async Task<IActionResult> Details(Guid? id)
+        public async Task<IActionResult> Details(string id)
         {
             if (id == null || _context.AnimalType == null)
             {
@@ -57,20 +59,28 @@ namespace WebProgramlamaOdevi.Areas.Admin.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,Id")] AnimalType animalType)
+        public async Task<IActionResult> Create([Bind("Name")] AnimalType animalType)
         {
-            if (ModelState.IsValid)
+            try
             {
-                animalType.Id = Guid.NewGuid();
+                animalType.Id = Guid.NewGuid().ToString();
+
                 _context.Add(animalType);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(animalType);
+            catch (Exception ex)
+            {
+
+                return View(ex.Message);
+            }
+          
+            
+           
         }
 
         // GET: Admin/AnimalTypes/Edit/5
-        public async Task<IActionResult> Edit(Guid? id)
+        public async Task<IActionResult> Edit(string id)
         {
             if (id == null || _context.AnimalType == null)
             {
@@ -90,21 +100,20 @@ namespace WebProgramlamaOdevi.Areas.Admin.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Name,Id")] AnimalType animalType)
+        public async Task<IActionResult> Edit(string id, [Bind("Name,Id")] AnimalType animalType)
         {
             if (id != animalType.Id)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
-            {
+            
                 try
                 {
                     _context.Update(animalType);
                     await _context.SaveChangesAsync();
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (DbUpdateConcurrencyException ex)
                 {
                     if (!AnimalTypeExists(animalType.Id))
                     {
@@ -112,16 +121,16 @@ namespace WebProgramlamaOdevi.Areas.Admin.Controllers
                     }
                     else
                     {
-                        throw;
+                    return View(ex.Message); 
                     }
                 }
                 return RedirectToAction(nameof(Index));
-            }
-            return View(animalType);
+            
+            
         }
 
         // GET: Admin/AnimalTypes/Delete/5
-        public async Task<IActionResult> Delete(Guid? id)
+        public async Task<IActionResult> Delete(string id)
         {
             if (id == null || _context.AnimalType == null)
             {
@@ -141,7 +150,7 @@ namespace WebProgramlamaOdevi.Areas.Admin.Controllers
         // POST: Admin/AnimalTypes/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
+        public async Task<IActionResult> DeleteConfirmed(string id)
         {
             if (_context.AnimalType == null)
             {
@@ -157,7 +166,7 @@ namespace WebProgramlamaOdevi.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool AnimalTypeExists(Guid id)
+        private bool AnimalTypeExists(string id)
         {
           return (_context.AnimalType?.Any(e => e.Id == id)).GetValueOrDefault();
         }

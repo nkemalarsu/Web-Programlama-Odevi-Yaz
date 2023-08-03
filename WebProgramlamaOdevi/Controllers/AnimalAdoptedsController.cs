@@ -29,13 +29,12 @@ namespace WebProgramlamaOdevi.Controllers
         // GET: AnimalAdopteds
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.AnimalAdopted.Include(a => a.Animal);
-            //Giriş yapmış kullanıcı ile ilgili nesnelerin listelenmesini sağlar.
-            return View(await applicationDbContext.Where(p=>p.UserId== _userId).ToListAsync());
+            var applicationDbContext = _context.AnimalAdopted.Include(a => a.Animal).Include(u=>u.IdentityUser);
+            return View(await applicationDbContext.Where(p => p.UserId == _userId).ToListAsync());
         }
 
         // GET: AnimalAdopteds/Details/5
-        public async Task<IActionResult> Details(Guid? id)
+        public async Task<IActionResult> Details(string id)
         {
             if (id == null || _context.AnimalAdopted == null)
             {
@@ -45,8 +44,7 @@ namespace WebProgramlamaOdevi.Controllers
             var animalAdopted = await _context.AnimalAdopted
                 .Include(a => a.Animal)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            //Eğer get yapılan nesne o kullanıcıya ait değilse error verilir.
-            if (animalAdopted == null||animalAdopted.UserId!=_userId)
+            if (animalAdopted == null)
             {
                 return NotFound();
             }
@@ -57,7 +55,7 @@ namespace WebProgramlamaOdevi.Controllers
         // GET: AnimalAdopteds/Create
         public IActionResult Create()
         {
-            ViewData["AnimalId"] = new SelectList(_context.Animal, "Id", "Id");
+            ViewData["AnimalId"] = new SelectList(_context.Animal.Where(p=>p.isAdopted==false&&p.isConfirmed==true).ToList(), "Id", "Id");
             return View();
         }
 
@@ -66,78 +64,32 @@ namespace WebProgramlamaOdevi.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("UserId,AnimalId,CreatedDateTime,isConfirmed,ConfirmedDateTime,Id")] AnimalAdopted animalAdopted)
+        public async Task<IActionResult> Create([Bind("AnimalId")] AnimalAdopted animalAdopted)
         {
-            if (ModelState.IsValid)
+            try
             {
-                animalAdopted.Id = Guid.NewGuid();
+                animalAdopted.Id = Guid.NewGuid().ToString();
+                animalAdopted.UserId= _userId;
                 _context.Add(animalAdopted);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["AnimalId"] = new SelectList(_context.Animal, "Id", "Id", animalAdopted.AnimalId);
-            return View(animalAdopted);
+            catch (Exception ex)
+            {
+
+                return View(ex.Message);
+            }
+
+            finally
+            {
+                ViewData["AnimalId"] = new SelectList(_context.Animal, "Id", "Id", animalAdopted.AnimalId);
+
+            }
         }
 
-        // GET: AnimalAdopteds/Edit/5
-        public async Task<IActionResult> Edit(Guid? id)
-        {
-            if (id == null || _context.AnimalAdopted == null)
-            {
-                return NotFound();
-            }
+       
 
-            var animalAdopted = await _context.AnimalAdopted.FindAsync(id);
-            if (animalAdopted == null)
-            {
-                return NotFound();
-            }
-            ViewData["AnimalId"] = new SelectList(_context.Animal, "Id", "Id", animalAdopted.AnimalId);
-            return View(animalAdopted);
-        }
-
-        // POST: AnimalAdopteds/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("UserId,AnimalId,CreatedDateTime,isConfirmed,ConfirmedDateTime,Id")] AnimalAdopted animalAdopted)
-        {
-            if (id != animalAdopted.Id)
-            {
-                return NotFound();
-            }
-            if (animalAdopted.isConfirmed)
-            {
-                return NotFound("Onaylanmış İşlemi değiştiremezsiniz.");
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(animalAdopted);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!AnimalAdoptedExists(animalAdopted.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["AnimalId"] = new SelectList(_context.Animal, "Id", "Id", animalAdopted.AnimalId);
-            return View(animalAdopted);
-        }
-
-    
-        private bool AnimalAdoptedExists(Guid id)
+        private bool AnimalAdoptedExists(string id)
         {
           return (_context.AnimalAdopted?.Any(e => e.Id == id)).GetValueOrDefault();
         }

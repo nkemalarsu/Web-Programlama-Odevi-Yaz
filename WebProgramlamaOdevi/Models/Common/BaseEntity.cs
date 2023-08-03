@@ -2,14 +2,14 @@
 {
     public class BaseEntity
     {
-        public Guid Id { get; set; }= Guid.NewGuid();
+        public string Id { get; set; }= Guid.NewGuid().ToString();
         public BaseEntity()
         {
             
         }
         public BaseEntity(Guid Id)
         {
-            this.Id = Id;
+            this.Id = Id.ToString();
         }
     }
 }

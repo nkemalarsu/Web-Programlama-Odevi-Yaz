@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -11,27 +11,25 @@ using WebProgramlamaOdevi.Models;
 
 namespace WebProgramlamaOdevi.Controllers
 {
-   
     public class AnimalsController : Controller
     {
         private readonly ApplicationDbContext _context;
-
-        public AnimalsController(ApplicationDbContext context)
+        string _userId;
+        public AnimalsController(ApplicationDbContext context,IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
+            _userId=httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
         }
 
         // GET: Animals
         public async Task<IActionResult> Index()
         {
-            //Sadece kabul edilen ve sahiplendirilmemiş hayvanları görüntüler.
-            return _context.Animal != null ?
-                        View(await _context.Animal.Where(p=>p.isAdopted==false&&p.isConfirmed==true).ToListAsync()) :
-                        Problem("Entity set 'ApplicationDbContext.Animal'  is null.");
+            var applicationDbContext = _context.Animal.Include(a => a.AnimalType);
+            return View(await applicationDbContext.Where(p=>p.isConfirmed==true&&p.isAdopted==false).ToListAsync());
         }
 
         // GET: Animals/Details/5
-        public async Task<IActionResult> Details(Guid? id)
+        public async Task<IActionResult> Details(string id)
         {
             if (id == null || _context.Animal == null)
             {
@@ -39,6 +37,7 @@ namespace WebProgramlamaOdevi.Controllers
             }
 
             var animal = await _context.Animal
+                .Include(a => a.AnimalType)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (animal == null)
             {
@@ -51,11 +50,7 @@ namespace WebProgramlamaOdevi.Controllers
         // GET: Animals/Create
         public IActionResult Create()
         {
-            ViewBag.AnimalTypes = _context.AnimalType.ToList().Select(p => new SelectListItem()
-            {
-                Text = p.Name,
-                Value = p.Id.ToString()
-            });
+            ViewData["AnimalTypeId"] = new SelectList(_context.AnimalType, "Id", "Id");
             return View();
         }
 
@@ -66,19 +61,29 @@ namespace WebProgramlamaOdevi.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("AnimalTypeId,Name,Description,Age,Id")] Animal animal)
         {
-            if (ModelState.IsValid)
+            try
             {
-                animal.Id = Guid.NewGuid();
+                animal.Id = Guid.NewGuid().ToString();
                 _context.Add(animal);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(animal);
+            catch (Exception ex)
+            {
+
+                return View(ex.Message);
+            }
+            finally
+            {
+                ViewData["AnimalTypeId"] = new SelectList(_context.AnimalType, "Id", "Id", animal.AnimalTypeId);
+            }
         }
 
-        private bool AnimalExists(Guid id)
+        // GET: Animals/Edit/5
+       
+        private bool AnimalExists(string id)
         {
-            return (_context.Animal?.Any(e => e.Id == id)).GetValueOrDefault();
+          return (_context.Animal?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

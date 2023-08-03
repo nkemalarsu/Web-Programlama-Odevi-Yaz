@@ -12,8 +12,8 @@ using WebProgramlamaOdevi.Data;
 namespace WebProgramlamaOdevi.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230802122258_add-adopted")]
-    partial class addadopted
+    [Migration("20230803135837_remove-and-create-table")]
+    partial class removeandcreatetable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -225,20 +225,16 @@ namespace WebProgramlamaOdevi.Data.Migrations
 
             modelBuilder.Entity("WebProgramlamaOdevi.Models.Animal", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)")
                         .HasColumnName("Id");
 
                     b.Property<int>("Age")
                         .HasColumnType("int")
                         .HasColumnName("Age");
 
-                    b.Property<Guid>("AnimalAcceptedId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("AnimalTypeId")
-                        .HasColumnType("uniqueidentifier")
+                    b.Property<string>("AnimalTypeId")
+                        .HasColumnType("nvarchar(450)")
                         .HasColumnName("AnimalTypeId");
 
                     b.Property<string>("Description")
@@ -266,18 +262,14 @@ namespace WebProgramlamaOdevi.Data.Migrations
 
             modelBuilder.Entity("WebProgramlamaOdevi.Models.AnimalAdopted", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)")
                         .HasColumnName("Id");
 
                     b.Property<string>("AnimalId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
+                        .HasColumnType("nvarchar(450)")
                         .HasColumnName("AnimalId");
-
-                    b.Property<Guid?>("AnimalId1")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("ConfirmedDateTime")
                         .HasColumnType("datetime2")
@@ -300,7 +292,7 @@ namespace WebProgramlamaOdevi.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AnimalId1");
+                    b.HasIndex("AnimalId");
 
                     b.HasIndex("IdentityUserId");
 
@@ -309,9 +301,8 @@ namespace WebProgramlamaOdevi.Data.Migrations
 
             modelBuilder.Entity("WebProgramlamaOdevi.Models.AnimalType", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)")
                         .HasColumnName("Id");
 
                     b.Property<string>("Name")
@@ -378,9 +369,7 @@ namespace WebProgramlamaOdevi.Data.Migrations
                 {
                     b.HasOne("WebProgramlamaOdevi.Models.AnimalType", "AnimalType")
                         .WithMany("Animals")
-                        .HasForeignKey("AnimalTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("AnimalTypeId");
 
                     b.Navigation("AnimalType");
                 });
@@ -389,7 +378,9 @@ namespace WebProgramlamaOdevi.Data.Migrations
                 {
                     b.HasOne("WebProgramlamaOdevi.Models.Animal", "Animal")
                         .WithMany()
-                        .HasForeignKey("AnimalId1");
+                        .HasForeignKey("AnimalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "IdentityUser")
                         .WithMany()

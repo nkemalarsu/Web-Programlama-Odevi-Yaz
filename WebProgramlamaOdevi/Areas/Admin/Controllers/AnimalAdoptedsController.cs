@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -11,8 +12,8 @@ using WebProgramlamaOdevi.Models;
 
 namespace WebProgramlamaOdevi.Areas.Admin.Controllers
 {
-    [Authorize(Roles ="Admin")]
     [Area("Admin")]
+    [Authorize(Roles = "Admin")]
     public class AnimalAdoptedsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -25,13 +26,12 @@ namespace WebProgramlamaOdevi.Areas.Admin.Controllers
         // GET: Admin/AnimalAdopteds
         public async Task<IActionResult> Index()
         {
-              return _context.AnimalAdopted != null ? 
-                          View(await _context.AnimalAdopted.ToListAsync()) :
-                          Problem("Entity set 'ApplicationDbContext.AnimalAdopted'  is null.");
+            var applicationDbContext = _context.AnimalAdopted.Include(a => a.Animal).Include(u=>u.IdentityUser);
+            return View(await applicationDbContext.ToListAsync());
         }
 
         // GET: Admin/AnimalAdopteds/Details/5
-        public async Task<IActionResult> Details(Guid? id)
+        public async Task<IActionResult> Details(string id)
         {
             if (id == null || _context.AnimalAdopted == null)
             {
@@ -39,6 +39,7 @@ namespace WebProgramlamaOdevi.Areas.Admin.Controllers
             }
 
             var animalAdopted = await _context.AnimalAdopted
+                .Include(a => a.Animal)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (animalAdopted == null)
             {
@@ -51,6 +52,8 @@ namespace WebProgramlamaOdevi.Areas.Admin.Controllers
         // GET: Admin/AnimalAdopteds/Create
         public IActionResult Create()
         {
+            ViewData["AnimalId"] = new SelectList(_context.Animal, "Id", "Id");
+            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id");
             return View();
         }
 
@@ -59,20 +62,37 @@ namespace WebProgramlamaOdevi.Areas.Admin.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("UserId,AnimalId,CreatedDateTime,isConfirmed,ConfirmedDateTime,Id")] AnimalAdopted animalAdopted)
+        public async Task<IActionResult> Create([Bind("UserId,AnimalId,isConfirmed,ConfirmedDateTime")] AnimalAdopted animalAdopted)
         {
-            if (ModelState.IsValid)
+            try
             {
-                animalAdopted.Id = Guid.NewGuid();
+                animalAdopted.Id=Guid.NewGuid().ToString();
                 _context.Add(animalAdopted);
+                if (animalAdopted.isConfirmed)
+                {
+                   var animal= _context.Animal.FirstOrDefault(p => p.Id == animalAdopted.Id);
+                    animal.isAdopted=true;
+                    _context.Update(animal);
+                }
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(animalAdopted);
+            catch (Exception ex)
+            {
+
+                return View(ex.Message);
+            }
+
+            finally
+            {
+                ViewData["AnimalId"] = new SelectList(_context.Animal, "Id", "Id", animalAdopted.AnimalId);
+                ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", animalAdopted.UserId);
+            }
+            
         }
 
         // GET: Admin/AnimalAdopteds/Edit/5
-        public async Task<IActionResult> Edit(Guid? id)
+        public async Task<IActionResult> Edit(string id)
         {
             if (id == null || _context.AnimalAdopted == null)
             {
@@ -84,6 +104,8 @@ namespace WebProgramlamaOdevi.Areas.Admin.Controllers
             {
                 return NotFound();
             }
+            ViewData["AnimalId"] = new SelectList(_context.Animal, "Id", "Id", animalAdopted.AnimalId);
+            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id",animalAdopted.Id);
             return View(animalAdopted);
         }
 
@@ -92,7 +114,7 @@ namespace WebProgramlamaOdevi.Areas.Admin.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("UserId,AnimalId,CreatedDateTime,isConfirmed,ConfirmedDateTime,Id")] AnimalAdopted animalAdopted)
+        public async Task<IActionResult> Edit(string id, [Bind("UserId,AnimalId,CreatedDateTime,isConfirmed,ConfirmedDateTime,Id")] AnimalAdopted animalAdopted)
         {
             if (id != animalAdopted.Id)
             {
@@ -103,6 +125,12 @@ namespace WebProgramlamaOdevi.Areas.Admin.Controllers
             {
                 try
                 {
+                    if (animalAdopted.isConfirmed)
+                    {
+                        var animal = _context.Animal.FirstOrDefault(p => p.Id == animalAdopted.AnimalId);
+                        animal.isAdopted = true;
+                        
+                    }
                     _context.Update(animalAdopted);
                     await _context.SaveChangesAsync();
                 }
@@ -119,11 +147,13 @@ namespace WebProgramlamaOdevi.Areas.Admin.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["AnimalId"] = new SelectList(_context.Animal, "Id", "Id", animalAdopted.AnimalId);
+            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", animalAdopted.UserId);
             return View(animalAdopted);
         }
 
         // GET: Admin/AnimalAdopteds/Delete/5
-        public async Task<IActionResult> Delete(Guid? id)
+        public async Task<IActionResult> Delete(string id)
         {
             if (id == null || _context.AnimalAdopted == null)
             {
@@ -131,6 +161,7 @@ namespace WebProgramlamaOdevi.Areas.Admin.Controllers
             }
 
             var animalAdopted = await _context.AnimalAdopted
+                .Include(a => a.Animal)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (animalAdopted == null)
             {
@@ -143,7 +174,7 @@ namespace WebProgramlamaOdevi.Areas.Admin.Controllers
         // POST: Admin/AnimalAdopteds/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
+        public async Task<IActionResult> DeleteConfirmed(string id)
         {
             if (_context.AnimalAdopted == null)
             {
@@ -159,7 +190,7 @@ namespace WebProgramlamaOdevi.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool AnimalAdoptedExists(Guid id)
+        private bool AnimalAdoptedExists(string id)
         {
           return (_context.AnimalAdopted?.Any(e => e.Id == id)).GetValueOrDefault();
         }
