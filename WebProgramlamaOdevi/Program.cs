@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.Globalization;
 using WebProgramlamaOdevi.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -42,6 +43,26 @@ builder.Services.AddRazorPages().AddSessionStateTempDataProvider();
 builder.Services.AddControllersWithViews().AddSessionStateTempDataProvider();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddLocalization(options =>
+{
+    options.ResourcesPath = "Resources";
+});
+
+//Culture Settings
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    options.DefaultRequestCulture = new("tr");
+
+    CultureInfo[] cultures = new CultureInfo[]
+    {
+        new("tr"),
+        new("en"),
+
+    };
+
+    options.SupportedCultures = cultures;
+    options.SupportedUICultures = cultures;
+});
 builder.Services.AddAuthorization(options =>
             options.AddPolicy("Admin",
                 policy => policy.RequireClaim("Admin","Admin")));
