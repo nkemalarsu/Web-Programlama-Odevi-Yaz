@@ -3,6 +3,9 @@
 @inject UserManager<IdentityUser> UserManager
 
 <ul class="navbar-nav">
+    <li class="nav-item">
+        @await Html.PartialAsync("_CulturePartial")
+    </li>
 @if (SignInManager.IsSignedIn(User))
 {
     <li class="nav-item">
